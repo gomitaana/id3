@@ -1,0 +1,5 @@
+#!/bin/bash 
+
+#run < problem_file.in
+python id3.py
+#if line[0] != '#' and line[0] != '[':
