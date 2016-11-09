@@ -4,7 +4,10 @@ import itertools
 import re
 import math
 import collections
+import operator
 #./run < testcases/or.arff.in
+
+visited = []
 
 class Node(object):
     def __init__(self, name, states):
@@ -71,6 +74,8 @@ if __name__ == '__main__':
     queries = []
     relation= []
     data_main = []
+    new_data_main = []
+    final_states_visited = []
 
     # Read each input line
     for line in sys.stdin:
@@ -109,6 +114,7 @@ if __name__ == '__main__':
         for data in data_main:
             combinations.append(data[i])
         nodes[n].updateCombinations(combinations)
+        new_data_main.append(combinations)
         combinations =[]
         n+=1
         i+=1
@@ -142,11 +148,9 @@ if __name__ == '__main__':
         seen_add = seen.add
         return [x for x in seq if not (x in seen or seen_add(x))]
     
-    visited = []
-        
     #Paint tree function
-    def paintTree(level,gain,best_gain,res):
-        if(res < len(nodes)):
+    def paintTree(level, gain, best_gain, new_data):
+        if(nodes != visited):
             #Obtain best node
             i=0
             while i < len(nodes)-1:
@@ -158,24 +162,31 @@ if __name__ == '__main__':
             best_gain.setVisited()
             visited.append(best_gain)
             
-            #Obtain paths
-            paths={}
+            #Obtain rest of the table
+            rest = list(new_data)
+            best_idx = nodes.index(best_gain)
+            for data in rest:
+                del data[best_idx]
+                
+            #Obtain paths of actual node
             for state in best_gain.states:
-                path={state: f7(best_gain.results[state])}
-                paths.update(path)
-            
-            for state in best_gain.states:
-                if(len(paths[state]) < 2):
-                    print((2*level)*" " + best_gain.name + ": " + state)
-                    print((2*(level+1))*" " + "ANSWER: "+ paths[state][0])
-                else:
-                    print((2*level)*" " + best_gain.name + ": " + state)
-                    next_lvl  = level +1
-                    #recursive
-                    res+=1
-                    paintTree(next_lvl,gain,best_gain,res)
+                sub_rest =[]
+                for idx, combination in enumerate(best_gain.combinations):
+                    if(state == combination):
+                        sub_rest.append(rest[idx])
+                #adapt sub_rets
             
         
     gain = nodes[0].gain
     best_gain=nodes[0]
-    paintTree(0,gain,best_gain,0)
+        
+    ordered_nodes = list(nodes)
+    ordered_data = list(data_main)
+    
+    del ordered_nodes[-1]
+    ordered_nodes.sort(key=operator.attrgetter('gain'))
+    ordered_nodes.append(nodes[-1])
+    
+    
+    
+    #paintTree(0, data_main)
